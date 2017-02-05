@@ -37,16 +37,10 @@ lon_ax      = [-121 -119];
 lat_ax      = 34.5-(1.3)*(lon_ax+121);
 slantborder = @(lat,lon) (lat-(34.5-(1.3)*(lon+121)));
 
-% Plot map
-clf
-contourf(Bathy.lon,Bathy.lat,Bathy.h1,[0 0],'Color','k')
-hold on
-contour(Bathy.lon,Bathy.lat,Bathy.h1,[-20 -50 -100 -250 -500 -1000],'Color',[.7 .7 .7])
-shading flat
-
 %%%%%%%%% Created griddedInterpolant %%%%%%%%%
 % This is global variable so that ray funcs can use it
 % Linear is fastest
+Bathy.h1_complete = Bathy.h1;
 Bathy.h1(Bathy.h1>0) = NaN;
 F = griddedInterpolant({Bathy.lon*myconst.d2r,Bathy.lat*myconst.d2r},Bathy.h1');
 F.ExtrapolationMethod = 'linear';
@@ -62,15 +56,15 @@ F.Method = 'linear';
 htry = 1*60;            % Initial step size
 eps = 3e-4;             % Step error threshold (3e-5 is accurate)
 yscale = [1 1 1];       % Scale errors if needed, 
-minStep = 30;            % Minimum step (seconds), don't want to take all day
-maxStep = 180;           % Maximum step (seconds), don't want to jump islands/shoals
+minStep = 15;            % Minimum step (seconds), don't want to take all day
+maxStep = 2*60;           % Maximum step (seconds), don't want to jump islands/shoals
 
 %Intialize counters
 stepcount = 0;          % Ray location
 raycount = 0;           % Number of rays traced
 
 %Initial ray angles to sweep through
-alpha_start = 160:1:340;            %Starting ray angle
+alpha_start = 160:1:300;            %Starting ray angle
 alpha_end = NaN(size(alpha_start)); %Ending ray angle
 
 %Initialize space for rays and time
@@ -108,8 +102,8 @@ for rr = 1:length(alpha_start); % Begin loop of initial rays range
         ray_loc(1,stepcount) = P(2)*myconst.r2d;
         ray_loc(2,stepcount) = P(3)*myconst.r2d;
         
-        plot(ray_loc(2,stepcount),ray_loc(1,stepcount),'.b')
-        pause(1e-4)
+        %plot(ray_loc(2,stepcount),ray_loc(1,stepcount),'.b')
+        %pause(1e-4)
     end
     
     
@@ -136,9 +130,30 @@ for rr = 1:length(alpha_start); % Begin loop of initial rays range
 end
 
 %%
+% Plot map
+
+%%
+clf
+contourf(Bathy.lon,Bathy.lat,Bathy.h1_complete,[0 0])
+hold on
+contour(Bathy.lon,Bathy.lat,Bathy.h1,[-20 -50 -100 -250 -500 -1000],'Color',[.7 .7 .7])
+shading flat
+colormap(copper)
+
+%%
+plot(ray_loc(2,:),ray_loc(1,:),'.b')
+xlim([-121 -117])
+ylim([32.5 34.6])
+
+
+return
+%%
+
 % Plot relation between starting and ending angles
 subplot(2,1,1)
 plot(alpha_end,alpha_start)
+
+
 
 % % Integrate Gamma function
 % K2 = zeros(360,1);
